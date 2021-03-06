@@ -21,11 +21,14 @@ func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context
 	}
 	redisClient.XGroupCreateMkStream(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), "0").Err()
 	for {
-		res, err := redisClient.XReadGroup(ctx, &redis.XReadGroupArgs{}).Result()
-		if err != nil {
-			log.Println("Recreating stream: ", ms.Input, err)
-			redisClient.XGroupCreateMkStream(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), "0").Err()
-		}
+		res, _ := redisClient.XReadGroup(ctx, &redis.XReadGroupArgs{
+			Group:    fmt.Sprintf("Group-%s", ms.Input),
+			Consumer: fmt.Sprintf("Consumer-%s", ms.Input),
+			Streams:  []string{ms.Input, ">"},
+			Count:    1,
+			Block:    1 * time.Second,
+		}).Result()
+
 		for _, x := range res {
 			for _, y := range x.Messages {
 				for key, element := range y.Values {
