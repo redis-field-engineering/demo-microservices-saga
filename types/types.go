@@ -22,7 +22,6 @@ type Microservice struct {
 }
 
 func (c *Config) GetConf(cf string) *Config {
-	log.Printf("Shit")
 	yamlFile, err := ioutil.ReadFile(cf)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)

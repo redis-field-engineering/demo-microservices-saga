@@ -37,9 +37,9 @@ func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context
 						runVars[key] = p
 					}
 				}
-				_, errdel := redisClient.XDel(ctx, ms.Input, y.ID).Result()
-				if errdel != nil {
-					log.Println("Unable to delete message: ", y.ID)
+				_, errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Result()
+				if errack != nil {
+					log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
 				}
 			}
 			for z := 0; z <= runVars["messages"]; z++ {

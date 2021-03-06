@@ -49,9 +49,9 @@ func main() {
 			go workers.InitialWorker(ms, client, ctx)
 		} else if i == len(c.Microservices)-1 {
 			fmt.Printf("FINAL %d: %+v\n", i, ms)
-			//go Worker.FinalWorker(ms, client)
+			go workers.FinalWorker(ms, client, ctx)
 		} else {
-			//go Worker.StandardWorker(ms, client)
+			go workers.StandardWorker(ms, client, ctx)
 		}
 	}
 
