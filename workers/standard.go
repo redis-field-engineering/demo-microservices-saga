@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/types"
@@ -11,15 +12,21 @@ import (
 )
 
 func StandardWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
-	log.Println("Starting worker: ", ms)
+	if ms.BlockMS == 0 {
+		ms.BlockMS = 10
+	}
+	if ms.BatchSize == 0 {
+		ms.BatchSize = 1
+	}
+	log.Printf("Starting worker: %+v", ms)
 	redisClient.XGroupCreateMkStream(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), "0").Err()
 	for {
 		res, _ := redisClient.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    fmt.Sprintf("Group-%s", ms.Input),
 			Consumer: fmt.Sprintf("Consumer-%s", ms.Input),
 			Streams:  []string{ms.Input, ">"},
-			Count:    1,
-			Block:    1 * time.Second,
+			Count:    int64(ms.BatchSize),
+			Block:    time.Duration(ms.BlockMS) * time.Millisecond,
 		}).Result()
 
 		for _, x := range res {
@@ -29,6 +36,10 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, ctx contex
 				}
 				for k, v := range y.Values {
 					kvs[k] = v
+				}
+				if ms.ProcMax-ms.ProcMin > 0 {
+					d := rand.Intn(ms.ProcMax-ms.ProcMin) + ms.ProcMin
+					time.Sleep(time.Duration(d) * time.Millisecond)
 				}
 				redisClient.XAdd(ctx, &redis.XAddArgs{
 					Stream: ms.Output,

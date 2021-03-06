@@ -13,7 +13,7 @@ import (
 )
 
 func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
-	log.Println("Starting worker: ", ms)
+	log.Printf("Starting worker: %+v", ms)
 	runVars := map[string]int{
 		"messages":  10000,
 		"errorrate": 0,
@@ -42,7 +42,7 @@ func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context
 					log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
 				}
 			}
-			for z := 0; z <= runVars["messages"]; z++ {
+			for z := 0; z < runVars["messages"]; z++ {
 				myname := fmt.Sprintf("message-%d", z)
 				redisClient.XAdd(ctx, &redis.XAddArgs{
 					Stream: ms.Output,

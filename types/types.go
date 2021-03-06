@@ -15,10 +15,14 @@ type Config struct {
 }
 
 type Microservice struct {
-	Name   string `yaml:"name"`
-	Input  string `yaml:"input"`
-	Output string `yaml:"output"`
-	Order  int    `yaml:"order"`
+	Name      string  `yaml:"name"`
+	Input     string  `yaml:"input"`
+	Output    string  `yaml:"output"`
+	ErrorRate float64 `yaml:"error_rate"`
+	BatchSize int32   `yaml:"batch_size"`
+	BlockMS   int32   `yaml:"block_ms"`
+	ProcMin   int     `yaml:"min_proc_ms"`
+	ProcMax   int     `yaml:"max_proc_ms"`
 }
 
 func (c *Config) GetConf(cf string) *Config {

@@ -11,15 +11,15 @@ import (
 )
 
 func FinalWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
-	log.Println("Starting worker: ", ms)
+	log.Printf("Starting worker: %+v", ms)
 	redisClient.XGroupCreateMkStream(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), "0").Err()
 	for {
 		res, _ := redisClient.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    fmt.Sprintf("Group-%s", ms.Input),
 			Consumer: fmt.Sprintf("Consumer-%s", ms.Input),
 			Streams:  []string{ms.Input, ">"},
-			Count:    1,
-			Block:    1 * time.Second,
+			Count:    int64(ms.BatchSize),
+			Block:    10 * time.Millisecond,
 		}).Result()
 
 		for _, x := range res {
