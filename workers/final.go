@@ -11,6 +11,12 @@ import (
 )
 
 func FinalWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
+	if ms.BlockMS == 0 {
+		ms.BlockMS = 10
+	}
+	if ms.BatchSize == 0 {
+		ms.BatchSize = 1
+	}
 	log.Printf("Starting worker: %+v", ms)
 	redisClient.XGroupCreateMkStream(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), "0").Err()
 	for {
@@ -35,8 +41,8 @@ func FinalWorker(ms types.Microservice, redisClient *redis.Client, ctx context.C
 				if errack != nil {
 					log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
 				}
+				redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID)
 
-				log.Printf("%s - completed %s", ms.Input, y.ID)
 			}
 		}
 	}

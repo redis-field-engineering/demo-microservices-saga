@@ -45,13 +45,12 @@ func main() {
 	for i, ms := range c.Microservices {
 		wg.Add(1)
 		if i == 0 {
-			fmt.Printf("INITIAL %d: %+v\n", i, ms)
 			go workers.InitialWorker(ms, client, ctx)
 		} else if i == len(c.Microservices)-1 {
-			fmt.Printf("FINAL %d: %+v\n", i, ms)
 			go workers.FinalWorker(ms, client, ctx)
 		} else {
 			go workers.StandardWorker(ms, client, ctx)
+			go workers.StandardSaver(ms, client, ctx)
 		}
 	}
 

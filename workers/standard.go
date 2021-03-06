@@ -41,15 +41,28 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, ctx contex
 					d := rand.Intn(ms.ProcMax-ms.ProcMin) + ms.ProcMin
 					time.Sleep(time.Duration(d) * time.Millisecond)
 				}
-				redisClient.XAdd(ctx, &redis.XAddArgs{
+				// Inject some errors
+				if ms.ErrorRate > 0 {
+					if rand.Intn(100)%(int(100.00*ms.ErrorRate)) == 0 {
+						log.Printf("%s: Error for %s : %s", ms.Name, y.ID, y.Values["Name"])
+						continue
+					}
+				}
+				xadderr := redisClient.XAdd(ctx, &redis.XAddArgs{
 					Stream: ms.Output,
 					ID:     "*",
 					Values: kvs,
-				}).Result()
+				}).Err()
 
-				errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Err()
-				if errack != nil {
-					log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
+				if xadderr == nil {
+
+					// TODO: handle this
+					redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID)
+
+					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Err()
+					if errack != nil {
+						log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
+					}
 				}
 
 			}
