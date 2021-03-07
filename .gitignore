@@ -1,1 +1,2 @@
-config.yml
+backend/config.yml
+frontend/venv
