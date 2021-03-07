@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -14,10 +15,9 @@ import (
 
 func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
 	log.Printf("Starting worker: %+v", ms)
-	runVars := map[string]int{
-		"messages":  10000,
-		"errorrate": 0,
-		"sleepms":   5,
+	runVars := map[string]string{
+		"messages": "10000",
+		"prefix":   "message",
 	}
 	redisClient.XGroupCreateMkStream(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), "0").Err()
 	for {
@@ -32,24 +32,33 @@ func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context
 		for _, x := range res {
 			for _, y := range x.Messages {
 				for key, element := range y.Values {
-					p, err := strconv.Atoi(element.(string))
-					if err == nil {
-						runVars[key] = p
-					}
+					runVars[key] = element.(string)
 				}
 				_, errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Result()
 				if errack != nil {
 					log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
 				}
 			}
-			for z := 0; z < runVars["messages"]; z++ {
-				myname := fmt.Sprintf("message-%d", z)
+			p, err := strconv.Atoi(runVars["messages"])
+			msgCount := 10000
+			if err == nil {
+				msgCount = p
+			}
+
+			for z := 0; z < msgCount; z++ {
+				myname := fmt.Sprintf("%s-%d", runVars["prefix"], z)
 				redisClient.XAdd(ctx, &redis.XAddArgs{
 					Stream: ms.Output,
 					ID:     "*",
 					Values: map[string]interface{}{"Name": myname},
 				}).Result()
-				time.Sleep(time.Duration(runVars["sleepms"]) * time.Millisecond)
+
+				// sleep by default for 2 ms
+				d := 2
+				if ms.ProcMax-ms.ProcMin > 0 {
+					d = rand.Intn(ms.ProcMax-ms.ProcMin) + ms.ProcMin
+				}
+				time.Sleep(time.Duration(d) * time.Millisecond)
 			}
 
 		}

@@ -43,7 +43,7 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, ctx contex
 				}
 				// Inject some errors
 				if ms.ErrorRate > 0 {
-					if rand.Intn(100)%(int(100.00*ms.ErrorRate)) == 0 {
+					if rand.Intn(10000)%(int(10000.00*ms.ErrorRate)) == 0 {
 						log.Printf("%s: Error for %s : %s", ms.Name, y.ID, y.Values["Name"])
 						continue
 					}

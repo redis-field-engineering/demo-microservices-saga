@@ -18,7 +18,7 @@ type Microservice struct {
 	Name          string  `yaml:"name"`
 	Input         string  `yaml:"input"`
 	Output        string  `yaml:"output"`
-	ErrorRate     float32 `yaml:"error_rate"`
+	ErrorRate     float32 `yaml:"error_rate_percent"`
 	BatchSize     int32   `yaml:"batch_size"`
 	SaveBatchSize int32   `yaml:"save_batch_size"`
 	BlockMS       int32   `yaml:"block_ms"`
