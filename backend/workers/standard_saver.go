@@ -61,7 +61,7 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, ctx context
 
 					// TODO: handle this
 					redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", k.Values["Name"]), ms.Name, k.ID)
-					redisClient.HIncrBy(ctx, fmt.Sprintf("STATE:%s", k.Values["Name"]), fmt.Sprintf("%s:RETRY", ms.Name), 1)
+					redisClient.HIncrBy(ctx, fmt.Sprintf("STATE:%s", k.Values["Name"]), fmt.Sprintf("%s_RETRY", ms.Name), 1)
 
 					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), k.ID).Err()
 					if errack != nil {

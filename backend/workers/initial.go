@@ -52,6 +52,7 @@ func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context
 					ID:     "*",
 					Values: map[string]interface{}{"Name": myname},
 				}).Result()
+				redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", myname), "id", myname)
 
 				// sleep by default for 2 ms
 				d := 2

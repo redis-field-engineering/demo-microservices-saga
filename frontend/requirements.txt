@@ -1,0 +1,9 @@
+Flask==1.1.1
+Flask-Bootstrap==3.3.7.1
+flask-nav==0.6
+hiredis==1.1.0
+PyYAML==5.4.1
+redis==3.5.3
+redisearch==2.0.0
+rmtest==0.7.0
+six==1.15.0
