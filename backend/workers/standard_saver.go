@@ -6,11 +6,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/stats"
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/types"
+	redistimeseries "github.com/RedisTimeSeries/redistimeseries-go"
 	"github.com/go-redis/redis/v8"
 )
 
-func StandardSaver(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
+func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *redistimeseries.Client, ctx context.Context) {
 	if ms.SaveBatchSize == 0 {
 		ms.SaveBatchSize = 10
 	}
@@ -62,6 +64,7 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, ctx context
 					// TODO: handle this
 					redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", k.Values["Name"]), ms.Name, k.ID)
 					redisClient.HIncrBy(ctx, fmt.Sprintf("STATE:%s", k.Values["Name"]), fmt.Sprintf("%s_RETRY", ms.Name), 1)
+					stats.DropStat(rtsClient, fmt.Sprintf("%s:RETRY", ms.Name))
 
 					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), k.ID).Err()
 					if errack != nil {

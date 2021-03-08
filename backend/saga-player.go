@@ -8,6 +8,7 @@ import (
 
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/types"
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/workers"
+	redistimeseries "github.com/RedisTimeSeries/redistimeseries-go"
 	"github.com/go-redis/redis/v8"
 	"github.com/pborman/getopt/v2"
 )
@@ -34,6 +35,11 @@ func main() {
 		MaxRetries:   10,
 	})
 
+	rtsclient := redistimeseries.NewClient(
+		fmt.Sprintf("%s:%d", c.Host, c.Port),
+		c.Password,
+		nil)
+
 	// confirm we can connect to redis before starting
 	err := client.Ping(ctx).Err()
 	if err != nil {
@@ -45,12 +51,12 @@ func main() {
 	for i, ms := range c.Microservices {
 		wg.Add(1)
 		if i == 0 {
-			go workers.InitialWorker(ms, client, ctx)
+			go workers.InitialWorker(ms, client, rtsclient, ctx)
 		} else if i == len(c.Microservices)-1 {
-			go workers.FinalWorker(ms, client, ctx)
+			go workers.FinalWorker(ms, client, rtsclient, ctx)
 		} else {
-			go workers.StandardWorker(ms, client, ctx)
-			go workers.StandardSaver(ms, client, ctx)
+			go workers.StandardWorker(ms, client, rtsclient, ctx)
+			go workers.StandardSaver(ms, client, rtsclient, ctx)
 		}
 	}
 

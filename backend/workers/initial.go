@@ -8,12 +8,14 @@ import (
 	"strconv"
 	"time"
 
+	redistimeseries "github.com/RedisTimeSeries/redistimeseries-go"
 	"github.com/go-redis/redis/v8"
 
+	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/stats"
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/types"
 )
 
-func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
+func InitialWorker(ms types.Microservice, redisClient *redis.Client, rtsClient *redistimeseries.Client, ctx context.Context) {
 	log.Printf("Starting worker: %+v", ms)
 	runVars := map[string]string{
 		"messages": "10000",
@@ -53,6 +55,7 @@ func InitialWorker(ms types.Microservice, redisClient *redis.Client, ctx context
 					Values: map[string]interface{}{"Name": myname},
 				}).Result()
 				redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", myname), "id", myname)
+				stats.DropStat(rtsClient, ms.Name)
 
 				// sleep by default for 2 ms
 				d := 2

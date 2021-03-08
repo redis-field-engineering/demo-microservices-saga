@@ -7,11 +7,13 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/stats"
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/types"
+	redistimeseries "github.com/RedisTimeSeries/redistimeseries-go"
 	"github.com/go-redis/redis/v8"
 )
 
-func StandardWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
+func StandardWorker(ms types.Microservice, redisClient *redis.Client, rtsClient *redistimeseries.Client, ctx context.Context) {
 	if ms.BlockMS == 0 {
 		ms.BlockMS = 10
 	}
@@ -58,6 +60,7 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, ctx contex
 
 					// TODO: handle this
 					redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID)
+					stats.DropStat(rtsClient, ms.Name)
 
 					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Err()
 					if errack != nil {

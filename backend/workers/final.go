@@ -6,11 +6,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/stats"
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/types"
+	redistimeseries "github.com/RedisTimeSeries/redistimeseries-go"
 	"github.com/go-redis/redis/v8"
 )
 
-func FinalWorker(ms types.Microservice, redisClient *redis.Client, ctx context.Context) {
+func FinalWorker(ms types.Microservice, redisClient *redis.Client, rtsClient *redistimeseries.Client, ctx context.Context) {
 	if ms.BlockMS == 0 {
 		ms.BlockMS = 10
 	}
@@ -42,6 +44,7 @@ func FinalWorker(ms types.Microservice, redisClient *redis.Client, ctx context.C
 					log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
 				}
 				redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID)
+				stats.DropStat(rtsClient, ms.Name)
 
 			}
 		}
