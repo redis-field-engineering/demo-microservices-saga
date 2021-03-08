@@ -114,9 +114,6 @@ def show_stats():
          labels.append("%s-RETRY" % ms['name'])
       except redis.exceptions.ResponseError:
          pass
-
-   print(labels)
-   print(values)
    return render_template('stats.html', labels=labels, values=values)
 
 
