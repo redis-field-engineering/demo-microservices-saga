@@ -9,12 +9,12 @@ services:
     image: "redislabs/redismod:latest"
     ports:
       - "6379:6379"
-        #  insight:
-        #    image: "redislabs/redisinsight:1.8.1"
-        #    depends_on:
-        #      - redis
-        #    ports:
-        #      - "8001:8001"
+  insight:
+    image: "redislabs/redisinsight:1.8.1"
+    depends_on:
+      - redis
+    ports:
+      - "8001:8001"
   backend:
     image: "maguec/microservices-saga-backend"
     links:
