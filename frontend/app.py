@@ -44,6 +44,7 @@ client = Client(
 nav = Nav()
 topbar = Navbar('',
     View('Home', 'index'),
+    View('Start', 'start_form'),
     View('Retries', 'show_retries'),
 )
 nav.register_element('top', topbar)
@@ -81,6 +82,17 @@ def show_retries():
      for w in list(map(lambda x : x.id, j)):
         res.append(w.replace('STATE:', ''))
   return render_template('showretries.html', messages = res)
+
+@app.route('/firemessage', methods = ['POST'])
+def firemessage():
+   f = request.form.to_dict()
+   #rdb.xadd(cfg['microservices'][0]['name'], "messages", str(f["messages"]), "prefix", f["prefix"] )
+   rdb.xadd(cfg['microservices'][0]['name'], f)
+   return redirect("/", code=302)
+
+@app.route('/startform')
+def start_form():
+  return render_template('startform.html')
 
 
 if __name__ == '__main__':
