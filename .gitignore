@@ -1,2 +1,7 @@
 backend/config.yml
+backend/build
+backend/deps
+backend/saga-player
+backend/test
+conf/config.yml
 frontend/venv

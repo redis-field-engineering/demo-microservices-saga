@@ -1,0 +1,35 @@
+version: '3'
+
+volumes:
+  conf:
+
+
+services:
+  redis:
+    image: "redislabs/redismod:latest"
+    ports:
+      - "6379:6379"
+        #  insight:
+        #    image: "redislabs/redisinsight:1.8.1"
+        #    depends_on:
+        #      - redis
+        #    ports:
+        #      - "8001:8001"
+  backend:
+    image: "maguec/microservices-saga-backend"
+    links:
+      - "redis:redis"
+    depends_on:
+      - redis
+    volumes:
+      - "./conf:/conf:ro"
+  frontend:
+    image: "maguec/microservices-saga-frontend"
+    links:
+      - "redis:redis"
+    ports:
+      - "5010:5010"
+    volumes:
+      - "./conf:/conf:ro"
+    environment:
+        - APP_CONF=/conf/config.yml

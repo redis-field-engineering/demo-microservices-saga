@@ -1,0 +1,20 @@
+host: redis
+port: 6379
+microservices:
+ - name: kickoff
+   output: step1
+ - name: OrderAccepted
+   input: step1
+   output: step2
+   batch_size: 2
+ - name: OrderQueued
+   input: step2
+   output: step3
+   min_proc_ms: 0
+   max_proc_ms: 2
+ - name: OrderExecuted
+   input: step3
+   output: step4
+   error_rate_percent: 0.2
+ - name: OrderConfirmed
+   input: step4
