@@ -3,6 +3,7 @@ from flask_bootstrap import Bootstrap
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from redisearch import Client, Query, aggregation, reducers, IndexDefinition, TextField, NumericField, TagField, NumericFilter
+from redistimeseries.client import Client as RedisTimeseries
 
 
 # From our local file
@@ -41,9 +42,15 @@ client = Client(
     port=cfg['port'],
    )
 
+rts = RedisTimeseries(
+    host=cfg['host'],
+    port=cfg['port'],
+    )
+
 nav = Nav()
 topbar = Navbar('',
     View('Home', 'index'),
+    View('Stats', 'show_stats'),
     View('Start', 'start_form'),
     View('Retries', 'show_retries'),
 )
@@ -86,13 +93,31 @@ def show_retries():
 @app.route('/firemessage', methods = ['POST'])
 def firemessage():
    f = request.form.to_dict()
-   #rdb.xadd(cfg['microservices'][0]['name'], "messages", str(f["messages"]), "prefix", f["prefix"] )
    rdb.xadd(cfg['microservices'][0]['name'], f)
-   return redirect("/", code=302)
+   return redirect("/stats", code=302)
 
 @app.route('/startform')
 def start_form():
   return render_template('startform.html')
+
+@app.route('/stats')
+def show_stats():
+   labels = []
+   values = []
+   for ms in cfg['microservices']:
+      try:
+         x = rts.get("TS:%s:Ops" % ms['name'])
+         values.append(x[1])
+         labels.append(ms['name'])
+         y = rts.get("TS:%s:RETRY:Ops" % ms['name'])
+         values.append(y[1])
+         labels.append("%s-RETRY" % ms['name'])
+      except redis.exceptions.ResponseError:
+         pass
+
+   print(labels)
+   print(values)
+   return render_template('stats.html', labels=labels, values=values)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,56 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Statistics{% endblock %}
+
+{% block navbar %}
+{{ nav.top.render() }}
+{% endblock %}
+
+{% block metas %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="10">
+{% endblock %}
+
+{% block styles %}
+  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+<script>
+var labels = {{labels|tojson}};
+var values = {{values}};
+var ctx = document.getElementById("revenue-chart");
+var myChart = new Chart(ctx, {
+  type: 'horizontalBar',
+  data: {
+    labels: labels,
+    datasets: [
+      { 
+        data: values,
+        label: "Operations Count",
+        backgroundColor: "rgba(255,99,132,0.2)",
+        borderColor: "rgba(255,99,132,1)",
+        borderWidth: 2,
+      }
+    ]
+  }
+});
+</script>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid">
+    <div class="wrapper">
+      <center>
+        <h1>{{ title }}</h1>
+      </center>
+
+      <canvas id="revenue-chart" width="700" height="200"></canvas>
+    </div>
+</div>
+
+</div>
+{% endblock %}
+ 
