@@ -18,7 +18,7 @@ Use docker-compose
 docker-compose up
 ```
 
-[Use the Web UI](http://localhost:5000)
+[Use the Web UI](http://localhost:5010)
 
 [Redis Insight](http://localhost:8001)
 
