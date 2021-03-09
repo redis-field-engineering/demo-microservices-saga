@@ -26,7 +26,7 @@ bootstrap = Bootstrap()
 if environ.get('APP_CONF') is not None:
    app_conf = environ.get('APP_CONF')
 else:
-   app_conf = getcwd() + "/../backend/config.yml"
+   app_conf = getcwd() + "/../conf/config.yml"
 
 with open(app_conf) as file:
    cfg = yaml.load(file, Loader=yaml.FullLoader)
@@ -60,9 +60,21 @@ nav.register_element('top', topbar)
 def index():
    try:
        client.info()
+       mermaid_data = "sequenceDiagram\nautonumber\nStart->>+%s: write\n" %cfg['microservices'][0]['output']
+       for ms in cfg['microservices'][1:-1]:
+          mermaid_data += "%s->>+%s: read\n" %(ms['name'], ms['input'])
+          mermaid_data += "%s->>%s: Process Message\n"  %(ms['name'], ms['name'])
+          mermaid_data += "%s->>+%s: write\n" %(ms['name'], ms['output'])
+          mermaid_data += "%s->>+ArbiterHash: write\n" %(ms['name'])
+
+       mermaid_data += "%s->>+%s: read\n" %(cfg['microservices'][-1]['name'], cfg['microservices'][-1]['input'])
+       mermaid_data += "%s->>%s: Process Message\n"  %(cfg['microservices'][-1]['name'],cfg['microservices'][-1]['name'])
+       mermaid_data += "%s->>+Finish: write\n" %(cfg['microservices'][-1]['name'])
+       mermaid_data += "%s->>+ArbiterHash: write\n" %(cfg['microservices'][-1]['name'])
+        
    except redis.exceptions.ResponseError:
        setup_data(cfg)
-   return render_template('top.html', microservices = cfg['microservices'])
+   return render_template('top.html', microservices = cfg['microservices'], mermaid_data=mermaid_data)
 
 @app.route('/messages')
 def show_message():

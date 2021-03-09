@@ -16,7 +16,15 @@
   <link rel="stylesheet" href="//jqueryui.com/resources/demos/style.css">
 {% endblock %}
 
+{% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+{% endblock %}
+
 {% block content %}
+    <div class="mermaid" >
+    {{ mermaid_data }}
+    </div>
 
 <div class="container">
 <table class="table table-dark">
