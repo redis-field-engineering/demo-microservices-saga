@@ -3,5 +3,6 @@ backend/build
 backend/deps
 backend/saga-player
 backend/test
+frontend/__pycache__/*
 conf/config.yml
 frontend/venv

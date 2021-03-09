@@ -11,8 +11,6 @@ def setup_data(cfg):
    definition = IndexDefinition(
            prefix=['STATE:'],
            language='English',
-           score_field='id',
-           score=0.5
            )
    flds = [TextField("id", weight=5.0), TagField('tags')]
    for j in cfg['microservices'][1:]:
