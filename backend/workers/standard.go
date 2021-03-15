@@ -45,7 +45,7 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, rtsClient 
 				}
 				// Inject some errors
 				if ms.ErrorRate > 0 {
-					if rand.Intn(10000)%(int(10000.00*ms.ErrorRate)) == 0 {
+					if rand.Intn(10000) <= int(100*ms.ErrorRate) {
 						stats.LogworkerError(
 							ctx, redisClient, ms.Name,
 							fmt.Sprintf("Consumer-%s", ms.Input),
