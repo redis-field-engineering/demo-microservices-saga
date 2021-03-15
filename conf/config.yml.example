@@ -2,19 +2,23 @@ host: redis
 port: 6379
 microservices:
  - name: kickoff
-   output: STREAM1 
+   output: stream-1
  - name: OrderAccepted
-   input: STREAM1
-   output: STREAM2
+   input: stream-1
+   output: stream-2
    batch_size: 2
+   error_rate_percent: 0.5
  - name: OrderQueued
-   input: STREAM2
-   output: STREAM3
+   input: stream-2
+   output: stream-3
    min_proc_ms: 0
    max_proc_ms: 2
+   error_rate_percent: 4.0
  - name: OrderExecuted
-   input: STREAM3
-   output: STREAM4
+   input: stream-3
+   output: stream-4
+   min_proc_ms: 3
+   max_proc_ms: 8
    error_rate_percent: 0.2
  - name: OrderConfirmed
-   input: STREAM4
+   input: stream-4
