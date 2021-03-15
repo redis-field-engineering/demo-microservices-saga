@@ -1,5 +1,5 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}Microservices Retries{% endblock %}
+{% block title %}Microservices Errors{% endblock %}
 
 {% block navbar %}
 {{ nav.top.render() }}
@@ -22,6 +22,7 @@
 <table class="table table-dark">
 <tr>
   <th>Timestamp</th>
+  <th>Message</th>
   <th>Microservice</th>
   <th>Consumer</th>
   <th>Error</th>
@@ -29,6 +30,7 @@
   {% for x  in errs %}
      <tr>
         <td> {{ x["timestamp".encode("utf-8")].decode("utf-8") }} </td>
+	<td> <a href="/messages?message={{ x["message".encode("utf-8")].decode("utf-8") }}"> {{ x["message".encode("utf-8")].decode("utf-8") }} </a> </td>
         <td> {{ x["consumer".encode("utf-8")].decode("utf-8") }} </td>
         <td> {{ x["consumer".encode("utf-8")].decode("utf-8") }} </td>
         <td> {{ x["error".encode("utf-8")].decode("utf-8") }} </td>

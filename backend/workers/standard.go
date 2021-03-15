@@ -46,34 +46,51 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, rtsClient 
 				// Inject some errors
 				if ms.ErrorRate > 0 {
 					if rand.Intn(10000)%(int(10000.00*ms.ErrorRate)) == 0 {
-						stats.LogworkerError(ctx, redisClient, ms.Name, fmt.Sprintf("Consumer-%s", ms.Input), "Random error as configured")
-						continue
-					}
-				}
-				xadderr := redisClient.XAdd(ctx, &redis.XAddArgs{
-					Stream: ms.Output,
-					ID:     "*",
-					Values: kvs,
-				}).Err()
-
-				if xadderr == nil {
-
-					nxres, _ := redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID).Result()
-					if nxres != true {
 						stats.LogworkerError(
 							ctx, redisClient, ms.Name,
 							fmt.Sprintf("Consumer-%s", ms.Input),
-							fmt.Sprintf("The message %s has already been seen", y.Values["Name"]),
-						)
-					}
-					stats.DropStat(rtsClient, ms.Name)
-
-					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Err()
-					if errack != nil {
-						log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
+							y.Values["Name"].(string),
+							"Random error as configured")
+						continue
 					}
 				}
+				// Check to see if we've already seen this
+				nxres, _ := redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID).Result()
 
+				// have not seen before
+				if nxres == true {
+					xadderr := redisClient.XAdd(ctx, &redis.XAddArgs{
+						Stream: ms.Output,
+						ID:     "*",
+						Values: kvs,
+					}).Err()
+
+					if xadderr != nil {
+						stats.LogworkerError(
+							ctx, redisClient, ms.Name,
+							fmt.Sprintf("Consumer-%s", ms.Input),
+							y.Values["Name"].(string),
+							fmt.Sprintf("Could not add message to next stream: %s : %s ", ms.Output, xadderr),
+						)
+
+					}
+
+					stats.DropStat(rtsClient, ms.Name)
+					// have seen before
+				} else {
+					stats.LogworkerError(
+						ctx, redisClient, ms.Name,
+						fmt.Sprintf("Consumer-%s", ms.Input),
+						y.Values["Name"].(string),
+						fmt.Sprintf("The message %s has already been seen", y.Values["Name"]),
+					)
+				}
+
+				// Either way we have to ack this messages so it does not get reprocesses
+				errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Err()
+				if errack != nil {
+					log.Printf("%s: Unable to ack message: %s %s ", ms.Input, y.ID, errack)
+				}
 			}
 		}
 	}

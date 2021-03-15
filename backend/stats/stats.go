@@ -34,11 +34,12 @@ func DropStat(client *redistimeseries.Client, statname string) {
 
 }
 
-func LogworkerError(ctx context.Context, redisClient *redis.Client, ms string, consumer string, errmsg string) {
+func LogworkerError(ctx context.Context, redisClient *redis.Client, ms string, consumer string, msg string, errmsg string) {
 	kvs := map[string]interface{}{
 		"timestamp":    time.Now().UnixNano() / int64(time.Millisecond),
 		"microservice": ms,
 		"consumer":     consumer,
+		"message":      msg,
 		"error":        errmsg,
 	}
 
