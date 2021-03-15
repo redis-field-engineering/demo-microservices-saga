@@ -1,0 +1,19 @@
+host: redis
+port: 6379
+microservices:
+ - name: OrderAccepted
+   output: externalAPI 
+ - name: ThirdPartyAPI
+   input: externalAPI
+   output: smsAPI
+   min_proc_ms: 2000
+   max_proc_ms: 9000
+   error_rate_percent: 20
+ - name: SMSService
+   input: smsAPI
+   output: confirmation
+   min_proc_ms: 1000
+   max_proc_ms: 2000
+   error_rate_percent: 15
+ - name: OrderConfirmed
+   input: confirmation
