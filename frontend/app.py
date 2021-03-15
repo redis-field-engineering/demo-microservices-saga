@@ -53,6 +53,7 @@ topbar = Navbar('',
     View('Stats', 'show_stats'),
     View('Start', 'start_form'),
     View('Retries', 'show_retries'),
+    View('Errors', 'show_errors'),
 )
 nav.register_element('top', topbar)
 
@@ -129,6 +130,11 @@ def show_stats():
          pass
    return render_template('stats.html', labels=labels, values=values)
 
+
+@app.route('/errors')
+def show_errors():
+   errs = list(map(lambda x : x[1], rdb.xrevrange("Errors",  max='+', min='-')))
+   return render_template('showerrors.html', errs=errs)
 
 if __name__ == '__main__':
    bootstrap.init_app(app)

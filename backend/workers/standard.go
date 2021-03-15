@@ -46,7 +46,7 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, rtsClient 
 				// Inject some errors
 				if ms.ErrorRate > 0 {
 					if rand.Intn(10000)%(int(10000.00*ms.ErrorRate)) == 0 {
-						log.Printf("%s: Error for %s : %s", ms.Name, y.ID, y.Values["Name"])
+						stats.LogworkerError(ctx, redisClient, ms.Name, fmt.Sprintf("Consumer-%s", ms.Input), "Random error as configured")
 						continue
 					}
 				}
@@ -58,8 +58,14 @@ func StandardWorker(ms types.Microservice, redisClient *redis.Client, rtsClient 
 
 				if xadderr == nil {
 
-					// TODO: handle this
-					redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID)
+					nxres, _ := redisClient.HSetNX(ctx, fmt.Sprintf("STATE:%s", y.Values["Name"]), ms.Name, y.ID).Result()
+					if nxres != true {
+						stats.LogworkerError(
+							ctx, redisClient, ms.Name,
+							fmt.Sprintf("Consumer-%s", ms.Input),
+							fmt.Sprintf("The message %s has already been seen", y.Values["Name"]),
+						)
+					}
 					stats.DropStat(rtsClient, ms.Name)
 
 					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), y.ID).Err()
