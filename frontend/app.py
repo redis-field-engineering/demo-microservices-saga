@@ -117,18 +117,25 @@ def start_form():
 @app.route('/stats')
 def show_stats():
    labels = []
-   values = []
+   good_values = []
+   retry_values = []
    for ms in cfg['microservices']:
+      labels.append(ms['name'])
       try:
          x = rts.get("TS:%s:Ops" % ms['name'])
-         values.append(x[1])
-         labels.append(ms['name'])
-         y = rts.get("TS:%s:RETRY:Ops" % ms['name'])
-         values.append(y[1])
-         labels.append("%s-RETRY" % ms['name'])
+         good_values.append(x[1])
       except redis.exceptions.ResponseError:
-         pass
-   return render_template('stats.html', labels=labels, values=values)
+         good_values.append(0)
+      try:
+         y = rts.get("TS:%s:RETRY:Ops" % ms['name'])
+         retry_values.append(y[1])
+      except redis.exceptions.ResponseError:
+         retry_values.append(0)
+   print(labels)
+   print(good_values)
+   print(retry_values)
+
+   return render_template('stats.html', labels=labels, good_values=good_values, retry_values=retry_values)
 
 
 @app.route('/errors')
