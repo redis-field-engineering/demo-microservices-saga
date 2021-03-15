@@ -131,9 +131,6 @@ def show_stats():
          retry_values.append(y[1])
       except redis.exceptions.ResponseError:
          retry_values.append(0)
-   print(labels)
-   print(good_values)
-   print(retry_values)
 
    return render_template('stats.html', labels=labels, good_values=good_values, retry_values=retry_values)
 
