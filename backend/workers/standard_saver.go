@@ -23,11 +23,11 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *
 			Start:    "-",
 			End:      "+",
 			Count:    int64(ms.SaveBatchSize),
-			Consumer: fmt.Sprintf("Consumer-%s", ms.Input),
+			Consumer: fmt.Sprintf("Consumer-%s-saver", ms.Input),
 		}).Result()
 
 		if err != nil {
-			log.Printf("%s: Error getting pending: %s", ms.Name, err)
+			log.Printf("%s-Saver: Error getting pending: %s", ms.Name, err)
 			time.Sleep(1 * time.Second)
 		}
 		time.Sleep(1000 * time.Millisecond)
@@ -44,7 +44,7 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *
 				Messages: msgids,
 			}).Result()
 			if cerr != nil {
-				log.Printf("%s: Error claiming: %s", ms.Name, err)
+				log.Printf("%s-saver: Error claiming: %s", ms.Name, err)
 			}
 			for _, k := range claims {
 				kvs := map[string]interface{}{
@@ -68,7 +68,7 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *
 
 					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), k.ID).Err()
 					if errack != nil {
-						log.Printf("%s: Unable to ack message: %s %s ", ms.Input, k.ID, errack)
+						log.Printf("%s-saver: Unable to ack message: %s %s ", ms.Input, k.ID, errack)
 					}
 				}
 

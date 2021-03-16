@@ -24,6 +24,7 @@ type Microservice struct {
 	BlockMS       int32   `yaml:"block_ms"`
 	ProcMin       int     `yaml:"min_proc_ms"`
 	ProcMax       int     `yaml:"max_proc_ms"`
+	ProcCount     int     `yaml:"process_count"`
 }
 
 func (c *Config) GetConf(cf string) *Config {
