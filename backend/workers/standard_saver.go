@@ -13,17 +13,17 @@ import (
 )
 
 func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *redistimeseries.Client, ctx context.Context) {
+	log.Printf("Starting Saver %s ", ms.Name)
 	if ms.SaveBatchSize == 0 {
 		ms.SaveBatchSize = 10
 	}
 	for {
 		pend, err := redisClient.XPendingExt(ctx, &redis.XPendingExtArgs{
-			Stream:   ms.Input,
-			Group:    fmt.Sprintf("Group-%s", ms.Input),
-			Start:    "-",
-			End:      "+",
-			Count:    int64(ms.SaveBatchSize),
-			Consumer: fmt.Sprintf("Consumer-%s-saver", ms.Input),
+			Stream: ms.Input,
+			Group:  fmt.Sprintf("Group-%s", ms.Input),
+			Start:  "-",
+			End:    "+",
+			Count:  int64(ms.SaveBatchSize),
 		}).Result()
 
 		if err != nil {
@@ -39,7 +39,7 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *
 			claims, cerr := redisClient.XClaim(ctx, &redis.XClaimArgs{
 				Stream:   ms.Input,
 				Group:    fmt.Sprintf("Group-%s", ms.Input),
-				Consumer: fmt.Sprintf("Consumer-%s", ms.Input),
+				Consumer: fmt.Sprintf("Consumer-%s-Saver", ms.Input),
 				MinIdle:  8 * time.Second,
 				Messages: msgids,
 			}).Result()

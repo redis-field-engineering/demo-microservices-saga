@@ -11,16 +11,14 @@ import (
 )
 
 func DropStat(client *redistimeseries.Client, statname string) {
-	currentTimestamp := time.Now().UnixNano() / 1e6
 	labels := map[string]string{"stage": statname}
 	keyname := fmt.Sprintf("TS:%s:Ops", statname)
 	_, haveit := client.Info(keyname)
 	if haveit != nil {
 		client.CreateKeyWithOptions(keyname, redistimeseries.DefaultCreateOptions)
 	}
-	_, err := client.IncrBy(
+	_, err := client.IncrByAutoTs(
 		keyname,
-		currentTimestamp,
 		1,
 		redistimeseries.CreateOptions{
 			Uncompressed: false,
