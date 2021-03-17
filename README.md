@@ -59,6 +59,9 @@ microservices:
    error_rate_percent: 0.2
    # Have this pipeline step fail 
    # a certain percentage of the time 
+   process_count: 3
+   # this will run three separte OrderExecuted Microservice processes
+   
 
 #  The final service
  - name: OrderConfirmed

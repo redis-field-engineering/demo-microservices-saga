@@ -13,21 +13,21 @@ import (
 )
 
 func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *redistimeseries.Client, ctx context.Context) {
+	log.Printf("Starting Saver %s ", ms.Name)
 	if ms.SaveBatchSize == 0 {
 		ms.SaveBatchSize = 10
 	}
 	for {
 		pend, err := redisClient.XPendingExt(ctx, &redis.XPendingExtArgs{
-			Stream:   ms.Input,
-			Group:    fmt.Sprintf("Group-%s", ms.Input),
-			Start:    "-",
-			End:      "+",
-			Count:    int64(ms.SaveBatchSize),
-			Consumer: fmt.Sprintf("Consumer-%s", ms.Input),
+			Stream: ms.Input,
+			Group:  fmt.Sprintf("Group-%s", ms.Input),
+			Start:  "-",
+			End:    "+",
+			Count:  int64(ms.SaveBatchSize),
 		}).Result()
 
 		if err != nil {
-			log.Printf("%s: Error getting pending: %s", ms.Name, err)
+			log.Printf("%s-Saver: Error getting pending: %s", ms.Name, err)
 			time.Sleep(1 * time.Second)
 		}
 		time.Sleep(1000 * time.Millisecond)
@@ -39,12 +39,12 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *
 			claims, cerr := redisClient.XClaim(ctx, &redis.XClaimArgs{
 				Stream:   ms.Input,
 				Group:    fmt.Sprintf("Group-%s", ms.Input),
-				Consumer: fmt.Sprintf("Consumer-%s", ms.Input),
+				Consumer: fmt.Sprintf("Consumer-%s-Saver", ms.Input),
 				MinIdle:  8 * time.Second,
 				Messages: msgids,
 			}).Result()
 			if cerr != nil {
-				log.Printf("%s: Error claiming: %s", ms.Name, err)
+				log.Printf("%s-saver: Error claiming: %s", ms.Name, err)
 			}
 			for _, k := range claims {
 				kvs := map[string]interface{}{
@@ -68,7 +68,7 @@ func StandardSaver(ms types.Microservice, redisClient *redis.Client, rtsClient *
 
 					errack := redisClient.XAck(ctx, ms.Input, fmt.Sprintf("Group-%s", ms.Input), k.ID).Err()
 					if errack != nil {
-						log.Printf("%s: Unable to ack message: %s %s ", ms.Input, k.ID, errack)
+						log.Printf("%s-saver: Unable to ack message: %s %s ", ms.Input, k.ID, errack)
 					}
 				}
 

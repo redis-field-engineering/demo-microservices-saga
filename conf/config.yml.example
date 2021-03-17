@@ -20,5 +20,6 @@ microservices:
    min_proc_ms: 3
    max_proc_ms: 8
    error_rate_percent: 0.2
+   process_count: 3
  - name: OrderConfirmed
    input: stream-4

@@ -49,13 +49,22 @@ func main() {
 	wg := sync.WaitGroup{}
 
 	for i, ms := range c.Microservices {
-		wg.Add(1)
 		if i == 0 {
+			wg.Add(1)
 			go workers.InitialWorker(ms, client, rtsclient, ctx)
 		} else if i == len(c.Microservices)-1 {
+			wg.Add(1)
 			go workers.FinalWorker(ms, client, rtsclient, ctx)
 		} else {
-			go workers.StandardWorker(ms, client, rtsclient, ctx)
+			pcount := 1
+			if ms.ProcCount > 0 {
+				pcount = ms.ProcCount
+			}
+			for w := 1; w <= pcount; w++ {
+				wg.Add(1)
+				go workers.StandardWorker(w, ms, client, rtsclient, ctx)
+			}
+			wg.Add(1)
 			go workers.StandardSaver(ms, client, rtsclient, ctx)
 		}
 	}

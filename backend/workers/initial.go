@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	redistimeseries "github.com/RedisTimeSeries/redistimeseries-go"
 	"github.com/go-redis/redis/v8"
+	redistimeseries "github.com/RedisTimeSeries/redistimeseries-go"
 
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/stats"
 	"github.com/RedisLabs-Field-Engineering/demo-microservices-saga/types"
