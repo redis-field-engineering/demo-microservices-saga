@@ -18,23 +18,25 @@
 
 {% block scripts %}
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true, "theme": "forest"});</script>
+    <script>mermaid.initialize({startOnLoad:true,theme: "forest"});</script>
 {% endblock %}
 
 {% block content %}
-
-<div class="container">
-    <center>
-    <h2>Microservice Saga<h2>
     <div class="mermaid" >
     {{ mermaid_data }}
     </div>
-    </center>
-    <p>This demonstrates a <a href="https://microservices.io/patterns/data/saga.html">Choreography-based Saga</a> microservices architecture.</p>
-    <p>You can <a href="/sequence">view the full sequence</a> of the flow or <a href="/startform">kick off the demonstration</a></p>
-    <br>
-    <p>Full documentation is available on <a href="https://github.com/RedisLabs-Field-Engineering/demo-microservices-saga">Github</a></p>
 
+<div class="container">
+<table class="table table-dark">
+<tr><th>Microservice</th><th>Input Stream</th><th>Output Stream</th></tr>
+  {% for x in microservices %}
+     <tr>
+        <td> {{ x["name"] }} </td>
+        <td> {{ x["input"] }} </td>
+        <td> {{ x["output"] }} </td>
+     </tr>
+  {% endfor %}
+    </table>
 </div>
 {% endblock %}
  

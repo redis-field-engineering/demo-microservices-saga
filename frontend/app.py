@@ -50,9 +50,10 @@ rts = RedisTimeseries(
 nav = Nav()
 topbar = Navbar('',
     View('Home', 'index'),
-    View('Stats', 'show_stats'),
+    View('Sequence', 'show_sequence'),
     View('Start', 'start_form'),
-    View('Retries', 'show_retries'),
+    View('Stats', 'show_stats'),
+    View('Saves', 'show_retries'),
     View('Errors', 'show_errors'),
 )
 nav.register_element('top', topbar)
@@ -64,6 +65,34 @@ def index():
    except redis.exceptions.ResponseError:
        setup_data(cfg)
 
+   mermaid_data = "classDiagram\nclass Start\nStart --|> %s\n" %(cfg['microservices'][0]['name'])
+
+   counter = 0
+   for ms in cfg['microservices'][1:-1]:
+
+       mermaid_data += "class %s_Saver{check_for_errors}\n%s_Saver <|--|> %s\n" %(ms["name"], ms["name"], ms["name"])
+       mermaid_data += "%s <|-- %s : %s \n" %(ms["name"], cfg['microservices'][counter]['name'], ms["input"])
+       mermaid_data += "class %s{" %(ms["name"])
+
+       c = ms.copy()
+
+       del c['input']
+       del c['output']
+       del c['name']
+
+
+       for x in c.keys():
+           mermaid_data += "\n\t%s: %s" %(x, c[x])
+
+       mermaid_data += "\n}\n"
+
+       counter += 1
+
+   mermaid_data += "%s <|-- %s : %s \nclass %s" %(cfg['microservices'][-1]['name'], cfg['microservices'][-2]['name'], cfg['microservices'][-1]['input'], cfg['microservices'][-1]['name'])  
+   return render_template('top.html', mermaid_data=mermaid_data)
+
+@app.route('/sequence')
+def show_sequence():
    mermaid_data = "sequenceDiagram\nautonumber\nStart->>+%s: write\n" %cfg['microservices'][0]['output']
    for ms in cfg['microservices'][1:-1]:
       mermaid_data += "%s->>+%s: read\n" %(ms['name'], ms['input'])
@@ -76,7 +105,7 @@ def index():
    mermaid_data += "%s->>+Finish: write\n" %(cfg['microservices'][-1]['name'])
    mermaid_data += "%s->>+StateMachineHash: write\n" %(cfg['microservices'][-1]['name'])
         
-   return render_template('top.html', microservices = cfg['microservices'], mermaid_data=mermaid_data)
+   return render_template('sequence.html', microservices = cfg['microservices'], mermaid_data=mermaid_data)
 
 @app.route('/messages')
 def show_message():
@@ -112,7 +141,12 @@ def firemessage():
 
 @app.route('/startform')
 def start_form():
-  return render_template('startform.html')
+   try:
+       client.info()
+   except redis.exceptions.ResponseError:
+       setup_data(cfg)
+
+   return render_template('startform.html')
 
 @app.route('/stats')
 def show_stats():
