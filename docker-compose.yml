@@ -10,11 +10,13 @@ services:
     ports:
       - "6379:6379"
   insight:
-    image: "redislabs/redisinsight:1.8.1"
+    image: "redislabs/redisinsight:latest"
     depends_on:
       - redis
     ports:
-      - "8001:8001"
+      - "8088:8088"
+    environment:
+        - RIPORT=8088
   backend:
     image: "maguec/microservices-saga-backend"
     links:

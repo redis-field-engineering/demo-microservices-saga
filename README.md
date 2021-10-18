@@ -20,7 +20,8 @@ docker-compose up
 
 [Use the Web UI](http://localhost:5010)
 
-[Redis Insight](http://localhost:8001)
+[Redis Insight](http://localhost:8088) If using docker-compose add a database with host redis and port 6379 to view in real time
+
 
 ## Configuration Information
 
