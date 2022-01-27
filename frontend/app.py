@@ -55,6 +55,7 @@ topbar = Navbar('',
     View('Stats', 'show_stats'),
     View('Saves', 'show_retries'),
     View('Errors', 'show_errors'),
+    View('Reset', 'reset_demo'),
 )
 nav.register_element('top', topbar)
 
@@ -173,6 +174,31 @@ def show_stats():
 def show_errors():
    errs = list(map(lambda x : x[1], rdb.xrevrange("Errors",  max='+', min='-')))
    return render_template('showerrors.html', errs=errs)
+
+@app.route('/reset_demo')
+def reset_demo():
+   return render_template('resetform.html')
+
+@app.route('/reset', methods = ['POST'])
+def reset():
+
+   for ms in cfg['microservices']:
+      # delete all the timeseries data
+      rdb.delete("TS:%s:Ops" % ms['name'])
+      rdb.delete("TS:%s:RETRY:Ops" % ms['name'])
+      rdb.xtrim("kickoff", 0)
+      rdb.xtrim("Errors", 0)
+      output = ms.get('output')
+      if output:
+         rdb.xtrim(output, 0)
+
+   # This is slow but it's only a demo
+   for key in rdb.scan_iter("STATE:*"):
+      rdb.delete(key)
+
+
+   return redirect("/", code=302)
+
 
 if __name__ == '__main__':
    bootstrap.init_app(app)

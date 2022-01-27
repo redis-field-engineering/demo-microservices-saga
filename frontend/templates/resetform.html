@@ -1,0 +1,33 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Kickoff Streaming data{% endblock %}
+
+{% block navbar %}
+{{ nav.top.render() }}
+{% endblock %}
+
+{% block metas %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
+
+{% block styles %}
+  <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="//jqueryui.com/resources/demos/style.css">
+{% endblock %}
+
+
+{% block content %}
+<center><table>
+<tr><td>
+<div class="container-fluid">
+  <form action = "/reset" method = "POST">
+    <div class="form-group">
+      <p><input type = "submit" value = "Reset Demo" /></p>
+    </div>
+  </form>
+</div>
+</td><td>
+</table></center>
+
+{% endblock %}
