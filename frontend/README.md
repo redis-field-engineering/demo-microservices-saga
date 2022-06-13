@@ -3,7 +3,7 @@
 ### Starup docker container
 
 ```
-docker run --rm -p 6379:6379 redislabs/redismod:latest
+docker run --rm -p 6379:6379 redis/redis-stack-server:latest
 ```
 
 
@@ -18,7 +18,7 @@ pip3 install -r requirements.txt
 ### Start the flask app
 
 ```
-python3 app.py 
+python3 app.py
 ```
 
 ### Navigate to the home page
